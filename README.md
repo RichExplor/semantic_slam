@@ -16,9 +16,6 @@ For more details about rangenet_lib, one could find in [rangenet_lib](https://gi
 <div align="center"><img width=80% height=80% src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-002.png"/></div>
 
 
-
---
-
 ## How to use
 
 ### 1. System dependencies

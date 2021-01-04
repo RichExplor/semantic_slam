@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="rangenet_lib"  type="main_sem_node"  name="main_sem_node"  output="screen">
+        <param name="model_path" type="string" value="/home/lenovo/catkin_wind/src/rangenet_lib/model/darknet53/" />
+        <param name="verbose" type="bool" value="true" />
+        <param name="pose_files" type="string" value="/home/lenovo/catkin_wind/src/rangenet_lib/pose/01/poses.txt" />
+    </node>
+
+</launch>

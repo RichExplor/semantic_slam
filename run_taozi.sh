@@ -1,0 +1,3 @@
+source activate tensorflow
+
+roslaunch semantic_slam aloam_pose_velodyne_32.launch

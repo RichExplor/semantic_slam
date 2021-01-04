@@ -11,8 +11,6 @@ For more details about rangenet_lib, one could find in [rangenet_lib](https://gi
 <img src="https://github.com/GuoFeng-X/semantic_slam/picture/kitti-000.png.png" width = 45% height = 45% div align=left />
 <img src="https://github.com/GuoFeng-X/semantic_slam/picture/kitti-001.png.png" width = 45% height = 45% div align=right />
 
-## viewpoint picture
-
 <img src="https://github.com/GuoFeng-X/semantic_slam/picture/kitti-002.png.png" width = 80% height = 80% />
 
 ---

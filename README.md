@@ -8,10 +8,8 @@ For more details about RangeNet++, one could find in [LiDAR-Bonnetal](https://gi
 
 For more details about rangenet_lib, one could find in [rangenet_lib](https://github.com/PRBonn/rangenet_lib).
 
-<img src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-000.png" width = 48% height = 48% div align=left  />
-<img src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-001.png" width = 48% height = 48% div align=right />
-
-<img src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-002.png" width = 90% height = 90% />
+<img src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-002.png" width = 55% height = 55% div align=left  />
+<img src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-001.png" width = 34% height = 34% div align=center />
 
 
 ---

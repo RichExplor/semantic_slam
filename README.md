@@ -8,7 +8,15 @@ For more details about RangeNet++, one could find in [LiDAR-Bonnetal](https://gi
 
 For more details about rangenet_lib, one could find in [rangenet_lib](https://github.com/PRBonn/rangenet_lib).
 
+<img src="https://github.com/GuoFeng-X/semantic_slam/picture/kitti-000.png.png" width = 45% height = 45% div align=left />
+<img src="https://github.com/GuoFeng-X/semantic_slam/picture/kitti-001.png.png" width = 45% height = 45% div align=right />
+
+## viewpoint picture
+
+<img src="https://github.com/GuoFeng-X/semantic_slam/picture/kitti-002.png.png" width = 80% height = 80% />
+
 ---
+
 ## How to use
 
 ### 1. System dependencies
@@ -82,6 +90,8 @@ We use the catkin tool to build the library.
 
 To run the demo, you need a pre-trained model, which can be downloaded here, [model](http://www.ipb.uni-bonn.de/html/projects/semantic_suma/darknet53.tar.gz). 
 
+将下载好的模型文件放到model中，所有模型文件放到darknet53_64和darknet53_32中。
+
   ```sh
   # go to the root path of the catkin workspace
   cd catkin_wind/src/rangenet_lib
@@ -91,9 +101,11 @@ To run the demo, you need a pre-trained model, which can be downloaded here, [mo
   ```
 
 #### 6.2 Run ourself database --velodyne VLP-32C
-To run the demo, you need a pre-trained model, which can be downloaded here. 
-仅仅改变了其中的 arch_cfg.yaml文件, 注意需要将两者的文件夹名字更换
+To run the demo, you need a pre-trained model, which can be downloaded here.
+
 链接: https://pan.baidu.com/s/1EG27yE0Q_1gi3UD_Ta_vZw 提取码: riqc 
+
+仅仅改变了其中的 arch_cfg.yaml文件, 注意需要将两者的文件夹名字更换. 将下载的 arch_cfg.yaml 文件copy到darknet53_32中，替换掉原来的文件。
 
   ```sh
   # go to the root path of the catkin workspace

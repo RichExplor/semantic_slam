@@ -3,7 +3,7 @@ project(semantic_slam)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -w")
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -25,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3)
 
 # libyaml-cpp (required)
 find_package (yaml-cpp)
@@ -133,7 +133,7 @@ add_library(semantic_external src/external.cpp)
 
 ## Declare a cpp library
 # define the network library (compiling tf and trt conditionally)
-set(semantic_lib_SOURCES src/net.cpp src/selector.cpp)
+set(semantic_lib_SOURCES src/net.cpp src/selector.cpp src/segment.cpp src/pointsCorrect.cpp)
 
 if(TENSORRT_FOUND)
   message("Building TensorRT")
@@ -160,3 +160,9 @@ target_link_libraries(semantic_lib
 
 add_executable(aloam_semantic_node ros/aloam_pose.cpp)
 target_link_libraries(aloam_semantic_node  semantic_lib)
+
+add_executable(aloam_pose_sematic_node ros/aloam_pose_sematic.cpp)
+target_link_libraries(aloam_pose_sematic_node  semantic_lib)
+
+add_executable(aloam_pose_graph_node ros/aloam_pose_graph.cpp)
+target_link_libraries(aloam_pose_graph_node  semantic_lib)

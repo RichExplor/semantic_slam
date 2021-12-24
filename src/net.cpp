@@ -123,12 +123,12 @@ Net::Net(const std::string& model_path)
  *
  * @return     cv format points
  */
-std::vector<cv::Vec3f> Net::getPoints(const std::vector<float>& scan, const uint32_t &num_points) {
-  std::vector<cv::Vec3f> points;
+std::vector<cv::Vec4f> Net::getPoints(const std::vector<float>& scan, const uint32_t &num_points) {
+  std::vector<cv::Vec4f> points;
   points.resize(num_points);
 
   for (uint32_t i = 0; i < num_points; ++i) {
-    points[i] = cv::Vec3f(scan[4 * i], scan[4 * i + 1], scan[4 * i +2]);
+    points[i] = cv::Vec4f(scan[4 * i], scan[4 * i + 1], scan[4 * i +2], scan[4 * i +3]);
   }
   return points;
 }

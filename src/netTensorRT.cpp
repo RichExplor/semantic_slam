@@ -113,25 +113,25 @@ NetTensorRT::~NetTensorRT() {
   }
 }
 
-// float intensity_sort = 0.0;
-// float x_mean = 0.0;
-// float y_mean = 0.0;
-// float z_mean = 0.0;
-// float intensity_mean = 0.0;
-// float range_mean = 0.0;
-// long x_size = 0;
-// long y_size = 0;
-// long z_size = 0;
-// long intensity_size = 0;
-// long range_size = 0;
+float intensity_sort = 0.0;
+float x_mean = 0.0;
+float y_mean = 0.0;
+float z_mean = 0.0;
+float intensity_mean = 0.0;
+float range_mean = 0.0;
+long x_size = 0;
+long y_size = 0;
+long z_size = 0;
+long intensity_size = 0;
+long range_size = 0;
 
-// static int index_wind = 0;
+static int index_wind = 0;
 
-// float xs_std = 0.0;
-// float ys_std = 0.0;
-// float zs_std = 0.0;
-// float range_std = 0.0;
-// float intensity_std = 0.0;
+float xs_std = 0.0;
+float ys_std = 0.0;
+float zs_std = 0.0;
+float range_std = 0.0;
+float intensity_std = 0.0;
 
 /**
  * @brief      Project a pointcloud into a spherical projection image.projection.
@@ -156,7 +156,8 @@ std::vector<std::vector<float>> NetTensorRT::doProjection(const std::vector<floa
   std::vector<float> proj_xs_tmp;
   std::vector<float> proj_ys_tmp;
 
-  // cv::Mat image_wind(_img_h, _img_w, CV_8UC3, cv::Scalar(0,0,0));
+  cv::Mat image_wind(_img_h, _img_w, CV_8UC3, cv::Scalar(0,0,0));
+
 
 
   for (uint32_t i = 0; i < num_points; i++) {
@@ -164,8 +165,9 @@ std::vector<std::vector<float>> NetTensorRT::doProjection(const std::vector<floa
     float y = scan[4 * i + 1];
     float z = scan[4 * i + 2];
     float intensity = scan[4 * i + 3];
-    float range = std::sqrt(x*x+y*y+z*z);
-    // float range_wind = std::sqrt(x*x+y*y);
+    float range = std::sqrt(x*x+y*y+z*z);  // 深度值
+
+    float range_wind = std::sqrt(x*x+y*y);
 
     ranges.push_back(range);
     xs.push_back(x);
@@ -177,15 +179,17 @@ std::vector<std::vector<float>> NetTensorRT::doProjection(const std::vector<floa
     float yaw = -std::atan2(y, x);
     float pitch = std::asin(z / range);
 
-    
+/**************/    
     // if(intensity > intensity_sort) intensity_sort = intensity;
 
-    // x_mean += x;
-    // y_mean += y;
-    // z_mean += z;
-    // range_mean += range;
-    // intensity_mean += intensity;
+    x_mean += x;
+    y_mean += y;
+    z_mean += z;
+    range_mean += range;
+    intensity_mean += intensity;
 
+
+/************/
 
     // std::cout<<"pitch: "<<pitch<<std::endl;
     // get projections in image coords
@@ -207,63 +211,65 @@ std::vector<std::vector<float>> NetTensorRT::doProjection(const std::vector<floa
     proj_y = std::max(0.0f, proj_y); // in [0,H-1]
     proj_ys_tmp.push_back(proj_y);
 
-    // cv::Scalar color_val(saturate_cast<uchar>(z / 20 * 255), saturate_cast<uchar>(z / 10 * 255), saturate_cast<uchar>(z / 5 * 255));
-
-    // // image_wind.at<uchar>(proj_y, proj_x) = intensity*255;
-    // image_wind.at<cv::Vec3b>(proj_y, proj_x)[0] = (uchar)(range_wind / 20 * 255);
-    // image_wind.at<cv::Vec3b>(proj_y, proj_x)[1] = (uchar)(range_wind / 10 * 255);
-    // image_wind.at<cv::Vec3b>(proj_y, proj_x)[2] = (uchar)(range_wind / 5 * 255);
+/****/
+    // image_wind.at<uchar>(proj_y, proj_x) = intensity*255;
+    image_wind.at<cv::Vec3b>(proj_y, proj_x)[0] = (uchar)(range_wind / 20 * 255);
+    image_wind.at<cv::Vec3b>(proj_y, proj_x)[1] = (uchar)(range_wind / 10 * 255);
+    image_wind.at<cv::Vec3b>(proj_y, proj_x)[2] = (uchar)(range_wind / 5 * 255);
+/******/
   }
 
-  // x_size += xs.size();
-  // y_size += ys.size();
-  // z_size += zs.size();
-  // range_size += ranges.size();
-  // intensity_size += intensitys.size();
+/********/
 
-  // index_wind++;
+  x_size += xs.size();
+  y_size += ys.size();
+  z_size += zs.size();
+  range_size += ranges.size();
+  intensity_size += intensitys.size();
 
-
-  // std::cout<<"intensity_mean: "<<intensity_mean/intensity_size<<std::endl;
-  // std::cout<<"x_mean: "<<x_mean/x_size<<std::endl;
-  // std::cout<<"y_mean: "<<y_mean/y_size<<std::endl;
-  // std::cout<<"z_mean: "<<z_mean/z_size<<std::endl;
-  // std::cout<<"range_mean: "<<range_mean/range_size<<std::endl;
+  index_wind++;
 
 
+  std::cout<<"intensity_mean: "<<intensity_mean/intensity_size<<std::endl;
+  std::cout<<"x_mean: "<<x_mean/x_size<<std::endl;
+  std::cout<<"y_mean: "<<y_mean/y_size<<std::endl;
+  std::cout<<"z_mean: "<<z_mean/z_size<<std::endl;
+  std::cout<<"range_mean: "<<range_mean/range_size<<std::endl;
 
-  // float x_std_temp = 0.0;
-  // float y_std_temp = 0.0;
-  // float z_std_temp = 0.0;
-  // float intensity_std_temp = 0.0;
-  // float range_std_temp = 0.0;
 
-  // for(size_t i=0; i<xs.size(); i++)
-  // {
-  //   x_std_temp += (xs[i] - x_mean/x_size)*(xs[i] - x_mean/x_size);
-  //   y_std_temp += (ys[i] - y_mean/y_size)*(ys[i] - y_mean/y_size);
-  //   z_std_temp += (zs[i] - z_mean/z_size)*(zs[i] - z_mean/z_size);
-  //   range_std_temp += (ranges[i] - range_mean/range_size)*(ranges[i] - range_mean/range_size);
-  //   intensity_std_temp += (intensitys[i] - intensity_mean/intensity_size)*(intensitys[i] - intensity_mean/intensity_size);
-  // }
 
-  // xs_std += sqrt(x_std_temp/xs.size());
-  // ys_std += sqrt(y_std_temp/ys.size());
-  // zs_std += sqrt(z_std_temp/zs.size());
-  // range_std += sqrt(range_std_temp/ranges.size());
-  // intensity_std += sqrt(intensity_std_temp/intensitys.size());
+  float x_std_temp = 0.0;
+  float y_std_temp = 0.0;
+  float z_std_temp = 0.0;
+  float intensity_std_temp = 0.0;
+  float range_std_temp = 0.0;
 
-  // std::cout<<"intensity_std: "<<intensity_std/index_wind<<std::endl;
-  // std::cout<<"x_std: "<<xs_std/index_wind<<std::endl;
-  // std::cout<<"y_std: "<<ys_std/index_wind<<std::endl;
-  // std::cout<<"z_std: "<<zs_std/index_wind<<std::endl;
-  // std::cout<<"range_std: "<<range_std/index_wind<<std::endl;
+  for(size_t i=0; i<xs.size(); i++)
+  {
+    x_std_temp += (xs[i] - x_mean/x_size)*(xs[i] - x_mean/x_size);
+    y_std_temp += (ys[i] - y_mean/y_size)*(ys[i] - y_mean/y_size);
+    z_std_temp += (zs[i] - z_mean/z_size)*(zs[i] - z_mean/z_size);
+    range_std_temp += (ranges[i] - range_mean/range_size)*(ranges[i] - range_mean/range_size);
+    intensity_std_temp += (intensitys[i] - intensity_mean/intensity_size)*(intensitys[i] - intensity_mean/intensity_size);
+  }
 
-  // // cv::namedWindow("wind", 0);
+  xs_std += sqrt(x_std_temp/xs.size());
+  ys_std += sqrt(y_std_temp/ys.size());
+  zs_std += sqrt(z_std_temp/zs.size());
+  range_std += sqrt(range_std_temp/ranges.size());
+  intensity_std += sqrt(intensity_std_temp/intensitys.size());
+
+  std::cout<<"intensity_std: "<<intensity_std/index_wind<<std::endl;
+  std::cout<<"x_std: "<<xs_std/index_wind<<std::endl;
+  std::cout<<"y_std: "<<ys_std/index_wind<<std::endl;
+  std::cout<<"z_std: "<<zs_std/index_wind<<std::endl;
+  std::cout<<"range_std: "<<range_std/index_wind<<std::endl;
+
+  // cv::namedWindow("wind", 0);
   // cv::imshow("wind", image_wind);
   // cv::waitKey(1);
 
-
+/*****************/
   // stope a copy in original order
   proj_xs = proj_xs_tmp;
   proj_ys = proj_ys_tmp;

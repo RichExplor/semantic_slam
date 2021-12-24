@@ -54,7 +54,7 @@ class Net {
    *
    * @return     cv format points
    */
-  std::vector<cv::Vec3f> getPoints(const std::vector<float> &scan, const uint32_t& num_points);
+  std::vector<cv::Vec4f> getPoints(const std::vector<float> &scan, const uint32_t& num_points);
 
   /**
    * @brief      Convert mask to color using dictionary as lut

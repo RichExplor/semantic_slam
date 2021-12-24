@@ -133,7 +133,7 @@ void laserCloudHander(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
 
     // pcl::toROSMsg(*mapCloud, laserCloudOutMsg);
     // laserCloudOutMsg.header.stamp = laserCloudMsg->header.stamp;
-    // laserCloudOutMsg.header.frame_id = "/camera_init";
+    // laserCloudOutMsg.header.frame_id = "world";
     // pubLaserCloud.publish(laserCloudOutMsg);
 
     // 发布处理后的点云消息
@@ -141,7 +141,7 @@ void laserCloudHander(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
 
     pcl::toROSMsg(semanticCloud, laserCloudOutMsg);
     laserCloudOutMsg.header.stamp = laserCloudMsg->header.stamp;
-    laserCloudOutMsg.header.frame_id = "/camera_init";
+    laserCloudOutMsg.header.frame_id = "world";
     pubLaserCloud.publish(laserCloudOutMsg);
 
 }

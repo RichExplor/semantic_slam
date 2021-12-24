@@ -109,7 +109,7 @@ To run the demo, you need a pre-trained model, which can be downloaded here.
   ```sh
   # go to the root path of the catkin workspace
   cd catkin_wind/src/rangenet_lib
-  source activate tensorflow
+  source activate pytorch
   roslaunch semantic_slam aloam_pose_velodyne_32.launch
   rosbag play -r0.5 lidar_cam_imu55.bag
   ```

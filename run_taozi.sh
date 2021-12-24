@@ -1,3 +1,3 @@
-source activate tensorflow
+source activate pytorch
 
 roslaunch semantic_slam aloam_pose_velodyne_32.launch

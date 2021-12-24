@@ -1,0 +1,19 @@
+<launch>
+    <!-- <arg name="model_file" default = "$(find semantic_slam)/model/darknet53_32/" /> -->
+    <arg name="model_file" default = "$(find semantic_slam)/../../model/darknet53_16/" />
+    <!-- <arg name="model_file" default = "$(find semantic_slam)/../../model/darknet53_1024/" /> -->
+
+    <node pkg="semantic_slam"  type="aloam_semantic_node"  name="aloam_semantic_node"  output="screen">
+        <param name="model_path" type="string" value="$(arg model_file)" />
+        <param name="verbose" type="bool" value="true" />
+        <param name="pose_topic" type="string" value="/aft_mapped_to_init" />
+        <param name="lidar_topic" type="string" value="/velodyne_cloud_3" />
+    </node>
+
+    <include file="$(find aloam_velodyne)/launch/aloam_velodyne_HDL_16.launch">
+
+    </include>
+
+    <node name="rviz_wind" pkg="rviz" type="rviz" args="-d $(find semantic_slam)/launch/default.rviz" />
+
+</launch>

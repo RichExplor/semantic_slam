@@ -23,8 +23,8 @@ private:
     message_filters::Subscriber<sensor_msgs::PointCloud2> lidar_sub_;
     message_filters::Subscriber<nav_msgs::Odometry> pose_sub_;
 
-    // typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> lidar_odom_fuse_policy;
-    typedef message_filters::sync_policies::ExactTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> lidar_odom_fuse_policy;
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> lidar_odom_fuse_policy;
+    // typedef message_filters::sync_policies::ExactTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> lidar_odom_fuse_policy;
     typedef message_filters::Synchronizer<lidar_odom_fuse_policy> Sync;
     boost::shared_ptr<Sync> sync;
     /** class variable**/

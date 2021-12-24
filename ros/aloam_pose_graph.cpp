@@ -56,8 +56,8 @@ struct Pose6D {
 
 
 bool isNowKeyFrame = false;  // 关键帧标志位
-double keyFrameTransTh = 1.6;      // 平移阈值
-double keyFrameRotateTh = 10.0;     // 旋转阈值
+double keyFrameTransTh = 0.8;      // 平移阈值
+double keyFrameRotateTh = 5.0;     // 旋转阈值
 double translateAcc = 1000000.0;
 double rotationAcc = 100000.0;
 Pose6D prevOdomPose {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

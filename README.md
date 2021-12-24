@@ -16,6 +16,35 @@ For more details about rangenet_lib, one could find in [rangenet_lib](https://gi
 <div align="center"><img width=80% height=80% src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-002.png"/></div>
 
 
+## Add module
+
+Add dynamic point cloud culling module, which can be used in low frame rate point cloud (2-3Hz) .
+
+### Run dynamic pointcloud cull (VLP32 / HDL64)
+
+The dynamic point cloud removal of the KITTI dataset has not been tested for the time being, and will be added later.
+```
+cd catkin_ws
+source devel/setup.bash
+cd src/semantic_slam
+
+./run_taozi.sh 
+```
+
+### Run semantic mapping (VLP32 / HDL64)
+```
+cd catkin_ws
+source devel/setup.bash
+cd src/semantic_slam
+
+./run_kitti_mapping.sh  or   ./run_taozi_mapping.sh
+```
+
+### Run Dateset bag package
+```
+rosbag play taozihu_1.bag --pause -r0.5
+```
+
 ## How to use
 
 ### 1. System dependencies

@@ -31,7 +31,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: staticCloud
+    SyncSource: ""
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -249,7 +249,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: true
-      Enabled: true
+      Enabled: false
       Name: dynamtic
   Enabled: true
   Global Options:
@@ -283,18 +283,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.819479465
-        Y: 1.46532834
-        Z: 15.1069241
+        X: -1.37320709
+        Y: -0.728895605
+        Z: 14.6590014
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.0653981
+      Pitch: 1.14039803
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.58039832
+      Yaw: 3.3403964
     Saved: ~
 Window Geometry:
   Displays:

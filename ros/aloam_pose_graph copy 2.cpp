@@ -55,7 +55,7 @@ struct Pose6D {
 
 
 bool isNowKeyFrame = false;  // 关键帧标志位
-double keyFrameTransTh = 0.2;      // 平移阈值
+double keyFrameTransTh = 0.5;      // 平移阈值
 double keyFrameRotateTh = 2.0;     // 旋转阈值
 double translateAcc = 1000000.0;
 double rotationAcc = 100000.0;
@@ -165,7 +165,7 @@ PoseLoamMsg::PoseLoamMsg(ros::NodeHandle& nh): nh_(nh)
     pubLaserCloud_move_full = nh.advertise<sensor_msgs::PointCloud2>("/move_cloud_full", 1000);
 
     pubLaserCloud_dynatic = nh.advertise<sensor_msgs::PointCloud2>("/dynamtic_cloud", 1000);
-    pubLaserCloud_static = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud", 1000);
+    pubLaserCloud_static = nh.advertise<sensor_msgs::PointCloud2>("/static_cloud", 1000);
 }
 
 
@@ -262,16 +262,8 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
 
     PointTypeRGB point_ori;
     std::vector<int> seeds;
-    int count_mask = 0;
     for(size_t i=0; i<dnum; i++)
     {
-        // 在半径为 thres 的球形范围内的点被移除掉
-        if (points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2] > 20*20)
-            continue;
-
-        if (points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2] < 5*5)
-            continue;
-
         point_ori.x =  points[i][0];
         point_ori.y =  points[i][1];
         point_ori.z =  points[i][2];
@@ -292,15 +284,13 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
             (color_mask[i][0] == 0   && color_mask[i][1] == 0   && color_mask[i][2] == 0  )
           )
         {
-            pLabel[count_mask] = 1;  // 动态点云
-            seeds.push_back(count_mask);
+            pLabel[i] = 1;  // 动态点云
+            seeds.push_back(i);
         }
         else
         {
-            pLabel[count_mask] = 0;  // 静态点云
+            pLabel[i] = 0;  // 静态点云
         }
-
-        count_mask++;
     }
 
 
@@ -340,7 +330,7 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     pcl::PointCloud<PointTypeRGB>::Ptr dynaCloud(new pcl::PointCloud<PointTypeRGB>());
     pcl::PointCloud<PointTypeRGB>::Ptr statCloud(new pcl::PointCloud<PointTypeRGB>());
 
-    for(int i=0; i<fullCloud->points.size(); ++i)
+    for(int i=0; i<dnum; ++i)
     {
         point_ori = fullCloud->points[i];
         if(pLabel[i] == 1)

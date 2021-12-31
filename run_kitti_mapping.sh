@@ -1,3 +1,4 @@
 source activate pytorch
 
 roslaunch semantic_slam aloam_pose_velodyne_64_mapping.launch
+# roslaunch semantic_slam aloam_pose_velodyne_64_mapping_loop.launch

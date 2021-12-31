@@ -16,13 +16,13 @@ For more details about rangenet_lib, one could find in [rangenet_lib](https://gi
 <div align="center"><img width=80% height=80% src="https://github.com/GuoFeng-X/semantic_slam/blob/master/picture/kitti-002.png"/></div>
 
 
-## Add module
+## 0. Add module
 
 Add dynamic point cloud culling module, which can be used in low frame rate point cloud (2-3Hz) .
 
-### Run dynamic pointcloud cull (VLP32 / HDL64)
+### 0.1 Run dynamic pointcloud cull (VLP32 / HDL64)
 
-The dynamic point cloud removal of the KITTI dataset has not been tested for the time being, and will be added later.
+Remove all pseudo-dynamic point clouds, including static cars and people.
 ```
 cd catkin_ws
 source devel/setup.bash
@@ -31,18 +31,43 @@ cd src/semantic_slam
 ./run_taozi.sh 
 ```
 
-### Run semantic mapping (VLP32 / HDL64)
+### 0.2 Run semantic mapping (VLP32 / HDL64)
 ```
 cd catkin_ws
 source devel/setup.bash
 cd src/semantic_slam
 
 ./run_kitti_mapping.sh  or   ./run_taozi_mapping.sh
+
+rosbag play taozihu_1.bag --pause -r0.5
 ```
 
-### Run Dateset bag package
+### 0.3 Run semantic mapping and dynamic point cloud removal (very slow) 
+
+The difference from the first is that the real dynamic point cloud is removed, excluding static cars and people. For specific operations, please read "aloam_pose_velodyne_32_mapping.launch" files， and Follow the prompts to modify
+
+The dynamic point cloud removal of the KITTI dataset has not been tested for the time being, and will be added later.
+
 ```
-rosbag play taozihu_1.bag --pause -r0.5
+cd catkin_ws
+source devel/setup.bash
+cd src/semantic_slam
+
+./run_taozi_mapping.sh
+
+rosbag play taozihu_1.bag --pause -r0.2
+```
+
+### 0.4 Run loop detect pose and mapping
+For specific operations, please read "run_kitti_mapping.sh" files， and Follow the prompts to modify
+
+Use the tum format, pay attention to modify the position of the pose file in the code
+
+```
+source activate pytorch
+
+#roslaunch semantic_slam aloam_pose_velodyne_64_mapping.launch
+roslaunch semantic_slam aloam_pose_velodyne_64_mapping_loop.launch
 ```
 
 ## How to use

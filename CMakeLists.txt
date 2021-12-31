@@ -161,6 +161,9 @@ target_link_libraries(semantic_lib
 add_executable(aloam_semantic_node ros/aloam_pose.cpp)
 target_link_libraries(aloam_semantic_node  semantic_lib)
 
+add_executable(aloam_semantic_node_loop ros/aloam_pose_loop.cpp)
+target_link_libraries(aloam_semantic_node_loop  semantic_lib)
+
 add_executable(aloam_pose_sematic_node ros/aloam_pose_sematic.cpp)
 target_link_libraries(aloam_pose_sematic_node  semantic_lib)
 

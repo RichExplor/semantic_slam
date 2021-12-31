@@ -31,9 +31,7 @@ namespace cl = rangenet::segmentation;
 typedef pcl::PointXYZI PointType;
 
 
-
-
-ros::Publisher pubLaserCloud, pubLaseCloud_dyna, pubLaserCloud_dyna_in;
+ros::Publisher pubLaserCloud;
 std::unique_ptr<cl::Net> net;
 
 pcl::PointCloud<PointType>::Ptr mapCloud(new pcl::PointCloud<PointType>());
@@ -104,8 +102,6 @@ PoseLoamMsg::PoseLoamMsg(ros::NodeHandle& nh): nh_(nh)
 
     pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud", 1000);
 
-    pubLaseCloud_dyna = nh.advertise<sensor_msgs::PointCloud2>("/dynamtic_cloud", 1000);
-    pubLaserCloud_dyna_in = nh.advertise<sensor_msgs::PointCloud2>("/static_cloud", 1000);
 }
 
 
@@ -120,13 +116,10 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     std::vector<int> indices;
     pcl::removeNaNFromPointCloud(laserCloudIn, laserCloudIn, indices);
 
-    // removeClosedPointCloud(laserCloudIn, laserCloudIn, 3.0);  // 移除周围1m球行范围的点
-
     uint32_t num_points = laserCloudIn.size();
 
     
     std::vector<float> values;
-
     for(size_t i=0; i<num_points; i++)
     {
         values.push_back(laserCloudIn.points[i].x);
@@ -153,8 +146,16 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     // 1. 使用语义分割粗略划分静态和动态点云
     PointType point_ori;
     std::vector<int> seeds;
+    int count_mask = 0;
     for(size_t i=0; i<dnum; i++)
     {
+        // 在半径为 thres 的球形范围内的点被移除掉
+        if (points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2] > 20*20)
+            continue;
+
+        if (points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2] < 5*5)
+            continue;
+
         point_ori.x =  points[i][0];
         point_ori.y =  points[i][1];
         point_ori.z =  points[i][2];
@@ -169,16 +170,18 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
             (color_mask[i][0] == 90  && color_mask[i][1] == 30  && color_mask[i][2] == 150) ||
             (color_mask[i][0] == 250 && color_mask[i][1] == 80  && color_mask[i][2] == 100) ||
             (color_mask[i][0] == 180 && color_mask[i][1] == 30  && color_mask[i][2] == 80 ) ||
-            (color_mask[i][0] == 0   && color_mask[i][1] == 0   && color_mask[i][2] == 0  )
+            (color_mask[i][0] == 0   && color_mask[i][1] == 0   && color_mask[i][2] == 0  ) ||
+            (color_mask[i][0] == 0   && color_mask[i][1] == 0   && color_mask[i][2] == 255)
           )
         {
-            pLabel[i] = 1;  // 动态点云
-            seeds.push_back(i);
+            pLabel[count_mask] = 1;  // 动态点云
+            seeds.push_back(count_mask);
         }
         else
         {
-            pLabel[i] = 0;  // 静态点云
+            pLabel[count_mask] = 0;  // 静态点云
         }
+        count_mask++;
     }
     
     // 2. 构建kd-tree，开始区域生长
@@ -211,7 +214,7 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     pcl::PointCloud<PointType> dynaCloud;
     pcl::PointCloud<PointType> statCloud;
 
-    for(int i=0; i<dnum; ++i)
+    for(int i=0; i<fullCloud->points.size(); ++i)
     {
         point_ori = fullCloud->points[i];
 
@@ -221,12 +224,12 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
         }
         else
         {
-            // 在半径为 thres 的球形范围内的点被移除掉
-            if (point_ori.x * point_ori.x + point_ori.y * point_ori.y + point_ori.z * point_ori.z > 100*100)  //20
-                continue;
+            // // 在半径为 thres 的球形范围内的点被移除掉
+            // if (point_ori.x * point_ori.x + point_ori.y * point_ori.y + point_ori.z * point_ori.z > 50*50)  //20
+            //     continue;
 
-            if (point_ori.x * point_ori.x + point_ori.y * point_ori.y + point_ori.z * point_ori.z < 2*2) // 5
-                continue;
+            // if (point_ori.x * point_ori.x + point_ori.y * point_ori.y + point_ori.z * point_ori.z < 2*2) // 5
+            //     continue;
 
             statCloud.push_back(point_ori);
         }
@@ -255,37 +258,15 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     tform(1, 3) = trans[1];
     tform(2, 3) = trans[2];
     tform(3, 0) = 0; tform(3, 1) = 0; tform(3, 2) = 0; tform(3, 3) = 1;
-  
-    // pcl::transformPointCloud(semanticCloud, transformCloud, tform);  // 转换拼接点云
-    // voxel_grid_filter(transformCloud, transformCloud, 0.1);
-
-    // // 发布处理后的点云消息
-    // sensor_msgs::PointCloud2 laserCloudOutMsg;
-
-    // pcl::toROSMsg(transformCloud, laserCloudOutMsg);
-    // laserCloudOutMsg.header.stamp = laserCloudMsg->header.stamp;
-    // laserCloudOutMsg.header.frame_id = "world";
-    // pubLaserCloud.publish(laserCloudOutMsg);
-
-
-    // 发布动态点云
-    pcl::transformPointCloud(dynaCloud, dynaCloud, tform);  // 转换拼接点云
-    sensor_msgs::PointCloud2 laserCloudOutMsg_dyna;
-
-    pcl::toROSMsg(dynaCloud, laserCloudOutMsg_dyna);
-    laserCloudOutMsg_dyna.header.stamp = laserCloudMsg->header.stamp;
-    laserCloudOutMsg_dyna.header.frame_id = "world";
-    pubLaseCloud_dyna.publish(laserCloudOutMsg_dyna);
 
     // 发布静态点云
     pcl::transformPointCloud(statCloud, statCloud, tform);  // 转换拼接点云 statCloud
-    // voxel_grid_filter(statCloud, statCloud, 0.1);
     sensor_msgs::PointCloud2 laserCloudOutMsg_stat;
 
     pcl::toROSMsg(statCloud, laserCloudOutMsg_stat);
     laserCloudOutMsg_stat.header.stamp = laserCloudMsg->header.stamp;
-    laserCloudOutMsg_stat.header.frame_id = "world";
-    pubLaserCloud_dyna_in.publish(laserCloudOutMsg_stat);
+    laserCloudOutMsg_stat.header.frame_id = "map";
+    pubLaserCloud.publish(laserCloudOutMsg_stat);
 
 }
 

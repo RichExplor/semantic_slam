@@ -16,6 +16,7 @@
 #include <Eigen/Dense>
 #include <tf/tf.h>
 
+#include <fstream>
 
 // net stuff
 #include <selector.hpp>
@@ -27,41 +28,16 @@ namespace cl = rangenet::segmentation;
 ros::Publisher pubLaserCloud;
 std::unique_ptr<cl::Net> net;
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr mapCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
 
-
-// 移除掉点云某个范围内的点
-template <typename PointT>
-void removeClosedPointCloud(const pcl::PointCloud<PointT> &cloud_in,
-                              pcl::PointCloud<PointT> &cloud_out, float thres)
+struct poseStr
 {
-    if (&cloud_in != &cloud_out)
-    {
-        cloud_out.header = cloud_in.header;
-        cloud_out.points.resize(cloud_in.points.size());
-    }
+    double times;
+    Eigen::Vector3d xyz;
+    Eigen::Quaterniond q;
+};
 
-    size_t j = 0;
+std::queue<poseStr> globalPose;
 
-    for (size_t i = 0; i < cloud_in.points.size(); ++i)
-    {
-        // 在半径为 thres 的球形范围内的点被移除掉
-        if (cloud_in.points[i].x * cloud_in.points[i].x + cloud_in.points[i].y * cloud_in.points[i].y + cloud_in.points[i].z * cloud_in.points[i].z < thres * thres)
-            continue;
-        cloud_out.points[j] = cloud_in.points[i];
-        j++;
-    }
-
-    // 重新设置点云大小
-    if (j != cloud_in.points.size())
-    {
-        cloud_out.points.resize(j);
-    }
-
-    cloud_out.height = 1;
-    cloud_out.width = static_cast<uint32_t>(j);
-    cloud_out.is_dense = true;
-}
 
 // 对点云进行将采用，减小对系统资源的占用，加快程序运行：
 void voxel_grid_filter(const pcl::PointCloud<pcl::PointXYZRGB>& source_cloud, pcl::PointCloud<pcl::PointXYZRGB>& filtered_cloud, const double& voxel_leaf_size)
@@ -76,30 +52,30 @@ void voxel_grid_filter(const pcl::PointCloud<pcl::PointXYZRGB>& source_cloud, pc
   return;
 }
 
-PoseLoamMsg::PoseLoamMsg(ros::NodeHandle& nh): nh_(nh)
+
+
+void callBackCloud(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
 {
+    Eigen::Quaterniond quat;
+    Eigen::Vector3d trans;
 
-    if(!nh_.getParam("pose_topic", pose_topic_))
-        ROS_ERROR("failed to read pose topic.");
-    if(!nh_.getParam("lidar_topic", lidar_topic_))
-        ROS_ERROR("failed to read lidar topic.");
+    poseStr tempPose = globalPose.front();
 
-    std::cout<<"激光雷达话题："<<lidar_topic_<<std::endl;
+    if(std::fabs(laserCloudMsg->header.stamp.toSec() - tempPose.times) > 0.00001)
+    {
+        std::cout<<"time is too quick or too slow ...."<<std::endl;
+        return ;
+    }
+    else
+    {
+        trans = tempPose.xyz;
+        quat = tempPose.q;
 
-    lidar_sub_.subscribe(nh_, lidar_topic_, 1);
-    pose_sub_.subscribe(nh_, pose_topic_, 1);
-
-    ROS_INFO("%s", lidar_topic_.c_str());
-    sync.reset(new Sync(lidar_odom_fuse_policy(10), lidar_sub_, pose_sub_));
-    sync->registerCallback(boost::bind(&PoseLoamMsg::callback, this, _1, _2));
-
-    pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud", 1000);
-}
-
+        globalPose.pop();
+    }
+    
 
 
-void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg, const nav_msgs::Odometry::ConstPtr &laserOdometry)
-{
     pcl::PointCloud<pcl::PointXYZI> laserCloudIn;
 
     pcl::fromROSMsg(*laserCloudMsg, laserCloudIn);
@@ -109,8 +85,6 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     // 剔除掉无效的点云
     std::vector<int> indices;
     pcl::removeNaNFromPointCloud(laserCloudIn, laserCloudIn, indices);
-
-    // removeClosedPointCloud(laserCloudIn, laserCloudIn, 3.0);  // 移除周围1m球行范围的点
 
     uint32_t num_points = laserCloudIn.size();
 
@@ -144,7 +118,7 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     {
         pcl::PointXYZRGB p;
 
-        // // // 剔除动态物体(假剔除，因为将静态的目标也剔除掉了) 目前仅剔除 car， 颜色顺序bgr
+        // // 剔除动态物体(假剔除，因为将静态的目标也剔除掉了) 目前仅剔除 car， 颜色顺序bgr
         // if( (color_mask[i][0] == 245 && color_mask[i][1] == 150 && color_mask[i][2] == 100) ||
         //     (color_mask[i][0] == 255 && color_mask[i][1] == 0   && color_mask[i][2] == 0  ) ||
         //     (color_mask[i][0] == 200 && color_mask[i][1] == 40  && color_mask[i][2] == 255) ||
@@ -177,16 +151,6 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     /* pose odomtry */
     Eigen::Matrix4d tform;
 
-    Eigen::Quaterniond quat;
-	Eigen::Vector3d trans;
-	quat.x() = laserOdometry->pose.pose.orientation.x;
-	quat.y() = laserOdometry->pose.pose.orientation.y;
-	quat.z() = laserOdometry->pose.pose.orientation.z;
-	quat.w() = laserOdometry->pose.pose.orientation.w;
-	trans.x() = laserOdometry->pose.pose.position.x;
-	trans.y() = laserOdometry->pose.pose.position.y;
-	trans.z() = laserOdometry->pose.pose.position.z;
-
     Eigen::Matrix3d tf_mat = quat.toRotationMatrix();
 
     tform.block(0,0,3,3) = tf_mat;
@@ -198,7 +162,6 @@ void PoseLoamMsg::callback(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg
     pcl::transformPointCloud(semanticCloud, transformCloud, tform);  // 转换拼接点云
 
     voxel_grid_filter(transformCloud, transformCloud, 0.1);
-    // voxel_grid_filter(transformCloud, transformCloud, 0.05);
     
 
     // 发布处理后的点云消息
@@ -229,9 +192,43 @@ int main(int argc, char **argv) {
     net = cl::make_net(path, backend);
     net->verbosity(verbose);
 
+    std::string lidarTop;
+    nh.getParam("lidar_topic", lidarTop);
+
+    // read loop files
+    std::ifstream ftimes;
+    ftimes.open("/home/lenovo/output/TaoZi/fs_loam_loop.txt");
+
+    int loot_count = 0;
+    while(!ftimes.eof())
+    {
+        poseStr poseTemp;
+    
+        std::string s;
+        std::getline(ftimes, s);
+        if(!s.empty())
+        {
+            std::stringstream ss;
+            ss << s;
+            double times, x, y, z, qx, qy, qz, qw;
+            ss >> times >> x >> y >> z >> qx >> qy >> qz >> qw;
+            poseTemp.times = times;
+            poseTemp.xyz = Eigen::Vector3d(x,y,z);
+            poseTemp.q = Eigen::Quaterniond(qw, qx, qy, qz);  
+            // std::cout.precision(19);
+            // std::cout<<times<<", "<<x<<" "<<y<<" "<<z<<" "<<qx<<" --- "<<qw<<std::endl;  
+        }
+        
+        // if((loot_count++) % 2 == 0)
+            globalPose.push(poseTemp);
+    }            
+
+    pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud", 1000);
+
+    ros::Subscriber subPointCloud = nh.subscribe<sensor_msgs::PointCloud2>(lidarTop, 1000, callBackCloud);
 
     // start do it!!!
-    PoseLoamMsg posemsg(nh);
+    // PoseLoamMsg posemsg(nh);
     ros::spin();
 
     return 0;

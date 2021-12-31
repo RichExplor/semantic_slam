@@ -3,18 +3,12 @@
     <!-- <arg name="model_file" default = "$(find semantic_slam)/model/darknet53_32/" /> -->
     <arg name="model_file" default = "$(find semantic_slam)/../../model/darknet53_32/" />
 
-
-    <node pkg="semantic_slam"  type="aloam_pose_sematic_node"  name="aloam_pose_sematic_node"  output="screen">
+    <node pkg="semantic_slam"  type="aloam_semantic_node_loop"  name="aloam_semantic_node_loop"  output="screen">
         <param name="model_path" type="string" value="$(arg model_file)" />
         <param name="verbose" type="bool" value="true" />
-
         <param name="pose_topic" type="string" value="/Odometry" />
         <param name="lidar_topic" type="string" value="/velodyne_points" />
     </node>
-
-
-    <include file="$(find fs_loam)/launch/run_mapping_VLP_32.launch" /> 
-
 
     <node name="rviz_wind" pkg="rviz" type="rviz" args="-d $(find semantic_slam)/launch/loam_velodyne.rviz" />
 

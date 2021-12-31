@@ -9,6 +9,14 @@
         <param name="lidar_topic" type="string" value="/kitti/velo/pointcloud" />
     </node>
 
+    <!-- 添加动态物体剔除，但运行速度极慢，以0.2倍速运行 -->
+
+    <!-- <node pkg="semantic_slam"  type="aloam_pose_graph_node"  name="aloam_pose_graph_node"  output="screen">
+        <param name="model_path" type="string" value="$(arg model_file)" />
+        <param name="verbose" type="bool" value="true" />
+        <param name="pose_topic" type="string" value="/Odometry" />
+        <param name="lidar_topic" type="string" value="/kitti/velo/pointcloud" />
+    </node> -->
 
     <include file="$(find fs_loam)/launch/run_mapping_HDL_64.launch" />
 
